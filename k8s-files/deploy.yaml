@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-app-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: python-app
+  template:
+    metadata:
+      labels:
+        app: python-app
+    spec:
+      containers:
+      - name: python-app-container
+        image: manjukolkar007/my-pyhton-app
+        ports:
+        - containerPort: 5000
+
+        # 🔹 ENV from ConfigMap
+        env:
+        - name: APP_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: python-app-config
+              key: APP_MODE
+
+        # 🔹 ENV from Secret
+        - name: APP_USER
+          valueFrom:
+            secretKeyRef:
+              name: python-app-secret
+              key: APP_USER
+
+        - name: APP_PASS
+          valueFrom:
+            secretKeyRef:
+              name: python-app-secret
+              key: APP_PASS
+
+        # 🔹 Volume Mount
+        volumeMounts:
+        - name: logs-volume
+          mountPath: /app/logs
+
+      # 🔹 Volume Definition
+      volumes:
+      - name: logs-volume
+        persistentVolumeClaim:
+          claimName: python-app-pvc
